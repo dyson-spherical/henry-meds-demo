@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY gradle gradle
 COPY gradlew build.gradle.kts settings.gradle.kts ./
-RUN ls -lR && ./gradlew install
+RUN ./gradlew
 
 COPY src ./src
 
