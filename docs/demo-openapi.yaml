@@ -1,0 +1,365 @@
+openapi: "3.0.3"
+info:
+  title: "demo API"
+  description: "demo API"
+  version: "1.0.0"
+servers:
+  - url: "https://localhost:8080"
+paths:
+  /clients:
+    post:
+      summary: "POST clients"
+      operationId: "create"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Client"
+        required: true
+      responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Client"
+        400:
+          description: "Bad Request"
+          content:
+            application/atom+xml:
+              schema:
+                $ref: "#/components/schemas/Failure"
+
+    get:
+      summary: "GET clients"
+      operationId: "getAll"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Client"
+  /clients/{id}:
+    get:
+      summary: "GET clients/{id}"
+      operationId: "getOne"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Client"
+  /appointments:
+    post:
+      summary: "POST appointments"
+      operationId: "create"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAppointmentRequest"
+        required: true
+      responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Appointment"
+  /appointments/client:
+    get:
+      summary: "GET appointments/client"
+      operationId: "getAllForClient"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Appointment"
+  /appointments/provider:
+    get:
+      summary: "GET appointments/provider"
+      operationId: "getAllForProvider"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Appointment"
+  /appointments/confirm:
+    post:
+      summary: "POST appointments/confirm"
+      operationId: "confirmAppointment"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "string"
+              format: "uuid"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Appointment"
+  /availability/{providerId}/available:
+    post:
+      summary: "POST availability/{providerId}/available"
+      operationId: "setAvailability"
+      parameters:
+        - name: "providerId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAvailabilityRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AvailableTimes"
+  /availability/availableSlots:
+    get:
+      summary: "GET availability/availableSlots"
+      operationId: "getAvailableSlots"
+      parameters:
+        - name: "providerId"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+        - name: "requestedDay"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AvailableSlots"
+  /providers:
+    post:
+      summary: "POST providers"
+      operationId: "create"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Provider"
+        required: true
+      responses:
+        "201":
+          description: "Created"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Provider"
+    get:
+      summary: "GET providers"
+      operationId: "getAllProviders"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Provider"
+  /providers/{id}:
+    get:
+      summary: "GET providers/{id}"
+      operationId: "getProvider"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Provider"
+components:
+  schemas:
+    Failure:
+      description: "Server Error Message"
+      type: "object"
+      properties:
+        timestamp:
+          type: "string"
+          format: "#/components/schemas/Timestamp"
+        status:
+          type: "string"
+        error:
+          type: "string"
+        path:
+          type: "string"
+    Timestamp:
+      type: "string"
+      format: "timestamp"
+    Provider:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        appointments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Appointment"
+      required:
+        - "name"
+    Appointment:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        startTime:
+          $ref: "#/components/schemas/Timestamp"
+        endTime:
+          $ref: "#/components/schemas/Timestamp"
+        scheduledBy:
+          $ref: "#/components/schemas/Client"
+        requestedProvider:
+          $ref: "#/components/schemas/Provider"
+        status:
+          type: "string"
+          enum:
+            - "OPEN"
+            - "EXPIRED"
+            - "CANCELLED"
+            - "CLOSED"
+            - "CONFIRMED"
+      required:
+        - "id"
+        - "startTime"
+        - "endTime"
+        - "scheduledBy"
+        - "requestedProvider"
+        - "status"
+    Client:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        appointments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Appointment"
+      required:
+        - "name"
+    AvailableTimes:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        startDate:
+          $ref: "#/components/schemas/Timestamp"
+        endDate:
+          $ref: "#/components/schemas/Timestamp"
+        provider:
+          $ref: "#/components/schemas/Provider"
+        status:
+          type: "string"
+          enum:
+            - "OPEN"
+            - "EXPIRED"
+            - "CANCELLED"
+            - "CLOSED"
+            - "CONFIRMED"
+      required:
+        - "id"
+        - "startDate"
+        - "endDate"
+        - "provider"
+        - "status"
+    AvailableSlots:
+      type: "object"
+      properties:
+        startTime:
+          $ref: "#/components/schemas/Timestamp"
+        endTime:
+          $ref: "#/components/schemas/Timestamp"
+        provider:
+          type: "string"
+      required:
+        - "startTime"
+        - "endTime"
+        - "provider"
+    CreateAvailabilityRequest:
+      type: "object"
+      properties:
+        startTime:
+          $ref: "#/components/schemas/Timestamp"
+        endTime:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - "startTime"
+        - "endTime"
+    CreateAppointmentRequest:
+      type: "object"
+      properties:
+        startTime:
+          $ref: "#/components/schemas/Timestamp"
+        endTime:
+          $ref: "#/components/schemas/Timestamp"
+        scheduledBy:
+          type: "string"
+          format: "uuid"
+        requestedProvider:
+          type: "string"
+          format: "uuid"
+      required:
+        - "startTime"
+        - "endTime"
+        - "scheduledBy"
+        - "requestedProvider"
